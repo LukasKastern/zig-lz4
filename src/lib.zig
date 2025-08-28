@@ -1,7 +1,7 @@
 const std = @import("std");
 
 /// LZ4 C API
-const c = @cImport({
+pub const c = @cImport({
     @cInclude("lz4.h");
     @cInclude("lz4frame.h");
 });
