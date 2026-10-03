@@ -21,17 +21,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Add translator
-    const translator = b.dependency("translate_c", .{
-        .target = b.graph.host,
-        .optimize = optimize,
-    });
-    const t: Translator = .init(translator, .{
-        .c_source_file = b.path("src/lib.c"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     const lib = b.addLibrary(.{
         .name = "lz4",
         .root_module = b.createModule(.{
@@ -45,6 +34,18 @@ pub fn build(b: *std.Build) void {
     const lz4_module = b.addModule("zig-lz4", .{
         .root_source_file = b.path("src/lib.zig"),
     });
+
+    // Add translator
+    const translator = b.dependency("translate_c", .{
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    const t: Translator = .init(translator, .{
+        .c_source_file = b.path("src/lib.c"),
+        .target = target,
+        .optimize = optimize,
+    });
+    t.linkLibrary(lib);
 
     lz4_module.linkLibrary(lib);
     lz4_module.addImport("c", t.mod);
