@@ -1,5 +1,7 @@
 const std = @import("std");
 
+pub const Translator = @import("translate_c").Translator;
+
 const SOURCE_FILES = [_][]const u8{
     "lib/lz4.c",
     "lib/lz4frame.c",
@@ -19,6 +21,17 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Add translator
+    const translator = b.dependency("translate_c", .{
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
+    const t: Translator = .init(translator, .{
+        .c_source_file = b.path("src/lib.c"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const lib = b.addLibrary(.{
         .name = "lz4",
         .root_module = b.createModule(.{
@@ -28,6 +41,7 @@ pub fn build(b: *std.Build) void {
         }),
         .linkage = .static,
     });
+    lib.root_module.addImport("c", t.mod);
 
     const lz4_module = b.addModule("zig-lz4", .{
         .root_source_file = b.path("src/lib.zig"),
