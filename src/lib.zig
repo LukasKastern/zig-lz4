@@ -1,6 +1,5 @@
 const std = @import("std");
 
-/// LZ4 C API
 const c = @import("c");
 
 const Allocator = std.mem.Allocator;
@@ -333,12 +332,12 @@ pub const Encoder = struct {
     }
 
     pub fn setAutoFlush(encoder: *Encoder, autoFlush: bool) *Encoder {
-        encoder.autoFlush = if (autoFlush) 1 else 0;
+        encoder.autoFlush = autoFlush;
         return encoder;
     }
 
     pub fn setFavorDecSpeed(encoder: *Encoder, favorDecSpeed: bool) *Encoder {
-        encoder.favorDecSpeed = if (favorDecSpeed) 1 else 0;
+        encoder.favorDecSpeed = favorDecSpeed;
         return encoder;
     }
 
@@ -425,6 +424,22 @@ pub const Decoder = struct {
         }
 
         return dest;
+    }
+
+    pub fn buffDecompress(decoder: *Decoder, src: []const u8, dst: []u8) !void {
+        const ctx = decoder.ctx.*;
+        const srcLen = src.len;
+
+        var dstOffset: usize = 0;
+        var srcOffset: usize = 0;
+        while (dstOffset < dst.len and srcOffset < srcLen) {
+            const readSrcSize = srcLen - srcOffset;
+            const incrDstSize = dst.len - dstOffset;
+            const updateLen = try Frame.decompress(ctx, dst[dstOffset..].ptr, dst.len, src[srcOffset..].ptr, readSrcSize, null);
+            if (updateLen == 0) break;
+            dstOffset += incrDstSize;
+            srcOffset += readSrcSize;
+        }
     }
 };
 

@@ -48,6 +48,7 @@ pub fn build(b: *std.Build) void {
     });
 
     lz4_module.linkLibrary(lib);
+    lz4_module.addImport("c", t.mod);
 
     const FLAGS = [_][]const u8{
         "-DLZ4LIB_API=extern\"C\"",
