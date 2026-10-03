@@ -41,7 +41,6 @@ pub fn build(b: *std.Build) void {
         }),
         .linkage = .static,
     });
-    lib.root_module.addImport("c", t.mod);
 
     const lz4_module = b.addModule("zig-lz4", .{
         .root_source_file = b.path("src/lib.zig"),
